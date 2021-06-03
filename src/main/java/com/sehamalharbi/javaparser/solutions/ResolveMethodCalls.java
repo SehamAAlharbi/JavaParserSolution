@@ -17,11 +17,12 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeS
 
 public class ResolveMethodCalls {
 
-	private static final String FILE_PATH = "src/main/java/com/sehamalharbi/javaparser/samples/ListLinks.java";
+	private static final String DirectoryPath = "src/main/java/com/sehamalharbi/javaparser/samples/";
+	private static ArrayList<String> methodCallsNamesList = new ArrayList<String>();
+	private static Map<String, Integer> methodCallsFrequencyCounter = new HashMap<String, Integer>();
 
 	/**
 	 * A helper method to get the maximum value of a map
-	 * 
 	 * @param <K>
 	 * @param <V>
 	 * @param map
@@ -36,7 +37,6 @@ public class ResolveMethodCalls {
 
 	/**
 	 * A helper method to get the minimum value of a map
-	 * 
 	 * @param <K>
 	 * @param <V>
 	 * @param map is the methodCallsFrequencyCounter <String , Integer>
@@ -51,7 +51,6 @@ public class ResolveMethodCalls {
 
 	/**
 	 * A helper method to get all keys of the maximum value in a map <key,value>
-	 * 
 	 * @param map is the methodCallsFrequencyCounter <String , Integer>
 	 */
 	public static void getAllKeysWithMaxValue(Map<String, Integer> map) {
@@ -63,12 +62,11 @@ public class ResolveMethodCalls {
 			}
 		}
 
-		System.out.println("Most Used Call: " + keys);
+		System.out.println("Most Used Calls: " + keys);
 	}
 
 	/**
 	 * A helper method to get all keys of the minimum value in a map <key,value>
-	 * 
 	 * @param map is the methodCallsFrequencyCounter <String , Integer>
 	 */
 	public static void getAllKeysWithMinValue(Map<String, Integer> map) {
@@ -80,12 +78,12 @@ public class ResolveMethodCalls {
 			}
 		}
 
-		System.out.println("Less Used Call: " + keys);
+		System.out.println("Less Used Calls: " + keys);
 	}
 
 	public static void main(String[] args) throws Exception {
 
-		// Using a combined types since not all method calls are Jsoup related
+		// Using a combined types since not all method calls are Jsoup-related
 		CombinedTypeSolver combinedSolver = new CombinedTypeSolver();
 		TypeSolver reflectionTypeSolver = new ReflectionTypeSolver();
 		TypeSolver jarTypeSolver = new JarTypeSolver("jars/jsoup-1.11.2.jar");
@@ -93,25 +91,28 @@ public class ResolveMethodCalls {
 		combinedSolver.add(reflectionTypeSolver);
 		combinedSolver.add(jarTypeSolver);
 
-		// JavaSymbolsolver is a part of the JavaParser library but with extra features
-		// such as relations and references between AST nodes.
+		// JavaSymbolsolver is part of the JavaParser library, but with extra features ..
+		// Such as relations and references between AST nodes.
 		JavaSymbolSolver symbolSolver = new JavaSymbolSolver(combinedSolver);
-		ArrayList<String> methodCallsNamesList = new ArrayList<String>();
-
-		// String is the method name, Integer is its frequency
-		Map<String, Integer> methodCallsFrequencyCounter = new HashMap<String, Integer>();
-
 		StaticJavaParser.getConfiguration().setSymbolResolver(symbolSolver);
-		CompilationUnit cu = StaticJavaParser.parse(new File(FILE_PATH));
 
-		// Filter all method calls to only include Jsoup API calls
-		cu.findAll(MethodCallExpr.class).forEach(mce -> {
-			if (mce.resolve().getPackageName().contains("org.jsoup")) {
-				methodCallsNamesList.add(mce.resolve().getName());
-
+		File directory = new File(DirectoryPath);
+		File[] directoryListing = directory.listFiles();
+		if (directoryListing != null) {
+			for (File child : directoryListing) {
+				//Parse each child file
+				CompilationUnit cu = StaticJavaParser.parse(child);
+				// Filter all method calls to only include the Jsoup API calls
+				cu.findAll(MethodCallExpr.class).forEach(mce -> {
+					if (mce.resolve().getPackageName().contains("org.jsoup")) {
+						methodCallsNamesList.add(mce.resolve().getName());
+					}
+				});
 			}
-		});
-
+		} else {
+			System.out.println("Directory Does Not exist!");
+		}
+		
 		// Put the method calls and their number of occurrence in a map
 		for (String name : methodCallsNamesList) {
 			Integer j = methodCallsFrequencyCounter.get(name);
@@ -119,10 +120,10 @@ public class ResolveMethodCalls {
 		}
 
 		System.out.println("[Jsoup Libraby Calls]\n");
+		
 		// Displaying the occurrence of elements in the ArrayList
 		for (Map.Entry<String, Integer> val : methodCallsFrequencyCounter.entrySet()) {
-			System.out
-					.println("Method Call: " + val.getKey() + "()  ------>  " + "Occurs: " + val.getValue() + " times");
+			System.out.println("Method Call: " + val.getKey() + "()  ------>  " + "Occurs: " + val.getValue() + " times");
 		}
 
 		System.out.println();

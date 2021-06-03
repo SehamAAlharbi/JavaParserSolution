@@ -1,6 +1,6 @@
 package com.sehamalharbi.javaparser.samples;
 
-import org.jsoup.Jsoup;
+import org.jsoup.Jsoup;	
 import org.jsoup.helper.Validate;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -39,6 +39,7 @@ public class ListLinks {
 		print("\nLinks: (%d)", links.size());
 		for (Element link : links) {
 			print(" * a: <%s>  (%s)", link.attr("abs:href"), trim(link.text(), 35));
+		
 		}
 	}
 
